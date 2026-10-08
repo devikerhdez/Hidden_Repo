@@ -1,0 +1,183 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum ContentType {
+  movie
+  series
+  anime
+  manhwa
+  manga
+  videogame
+}
+
+enum SwipeAction {
+  skip
+  seen
+  saved
+}
+
+enum ExternalSource {
+  tmdb
+  anilist
+  rawg
+  igdb
+}
+
+enum CoinReason {
+  rating_reward
+  future_spend
+}
+
+model User {
+  id              String   @id @default(uuid())
+  email           String   @unique
+  username        String   @unique
+  password_hash   String
+  avatar_url      String?
+  coins           Int      @default(0)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  swipes          UserSwipe[]
+  ratings         Rating[]
+  lists           CustomList[]
+  coinTransactions CoinTransaction[]
+  exclusions      UserExclusion[]
+}
+
+model ContentItem {
+  id                      String        @id @default(uuid())
+  type                    ContentType
+  title                   String
+  synopsis                String?
+  cover_url               String?
+  release_date            DateTime?
+  critic_rating           Float?
+  community_rating        Float?
+  community_rating_count  Int           @default(0)
+  saves_count             Int           @default(0)
+  seen_count              Int           @default(0)
+  trailer_url             String?
+  gameplay_url            String?
+  popularity_score        Float?
+  is_mainstream           Boolean       @default(false)
+  external_source         ExternalSource
+  external_id             String
+  created_at              DateTime      @default(now())
+  updated_at              DateTime      @updatedAt
+
+  genres                  ContentGenre[]
+  swipes                  UserSwipe[]
+  ratings                 Rating[]
+  listItems               ListItem[]
+  exclusions              UserExclusion[]
+
+  @@unique([external_source, external_id])
+  @@index([type])
+  @@index([is_mainstream])
+  @@index([community_rating])
+}
+
+model Genre {
+  id         String      @id @default(uuid())
+  name       String
+  applies_to ContentType
+
+  contentItems ContentGenre[]
+
+  @@unique([name, applies_to])
+}
+
+model ContentGenre {
+  content_id String
+  genre_id   String
+
+  content ContentItem @relation(fields: [content_id], references: [id], onDelete: Cascade)
+  genre   Genre       @relation(fields: [genre_id], references: [id], onDelete: Cascade)
+
+  @@id([content_id, genre_id])
+}
+
+model UserSwipe {
+  id         String      @id @default(uuid())
+  user_id    String
+  content_id String
+  action     SwipeAction
+  created_at DateTime    @default(now())
+
+  user    User        @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  content ContentItem @relation(fields: [content_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, content_id])
+  @@index([user_id])
+}
+
+model CustomList {
+  id         String   @id @default(uuid())
+  user_id    String
+  name       String
+  is_default Boolean  @default(false)
+  created_at DateTime @default(now())
+
+  user  User       @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  items ListItem[]
+
+  @@index([user_id])
+}
+
+model ListItem {
+  id         String   @id @default(uuid())
+  list_id    String
+  content_id String
+  added_at   DateTime @default(now())
+
+  list    CustomList  @relation(fields: [list_id], references: [id], onDelete: Cascade)
+  content ContentItem @relation(fields: [content_id], references: [id], onDelete: Cascade)
+
+  @@unique([list_id, content_id])
+}
+
+model Rating {
+  id          String   @id @default(uuid())
+  user_id     String
+  content_id  String
+  score       Int
+  review_text String?
+  created_at  DateTime @default(now())
+
+  user    User        @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  content ContentItem @relation(fields: [content_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, content_id])
+}
+
+model CoinTransaction {
+  id         String     @id @default(uuid())
+  user_id    String
+  amount     Int
+  reason     CoinReason
+  created_at DateTime   @default(now())
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+}
+
+model UserExclusion {
+  id         String   @id @default(uuid())
+  user_id    String
+  content_id String
+  created_at DateTime @default(now())
+
+  user    User        @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  content ContentItem @relation(fields: [content_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, content_id])
+}
