@@ -9,14 +9,19 @@ import { z } from 'zod';
 export const authRouter = Router();
 
 const registerSchema = z.object({
-  email: z.string().email(),
-  username: z.string().min(3).max(30),
-  password: z.string().min(6),
+  email: z.string().email('El formato de correo electrónico no es válido'),
+  username: z
+    .string()
+    .min(3, 'El nombre de usuario debe tener al menos 3 caracteres')
+    .max(30, 'El nombre de usuario no puede exceder 30 caracteres'),
+  password: z
+    .string()
+    .min(6, 'La contraseña debe tener al menos 6 caracteres'),
 });
 
 const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string(),
+  email: z.string().email('El formato de correo electrónico no es válido'),
+  password: z.string().min(1, 'La contraseña es requerida'),
 });
 
 function generateTokens(userId: string, email: string) {

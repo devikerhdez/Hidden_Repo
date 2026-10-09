@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import { Image } from 'expo-image';
 import { colors } from '../theme/colors';
 import type { ContentItem } from '../types';
 
@@ -22,9 +23,18 @@ const typeLabels: Record<string, string> = {
 export default function SwipeCard({ item }: Props) {
   return (
     <View style={styles.card}>
-      <View style={styles.imagePlaceholder}>
-        <Text style={styles.imageText}>{item.title.charAt(0)}</Text>
-      </View>
+      {item.cover_url ? (
+        <Image
+          source={{ uri: item.cover_url }}
+          style={styles.cardImage}
+          contentFit="cover"
+          transition={300}
+        />
+      ) : (
+        <View style={styles.imagePlaceholder}>
+          <Text style={styles.imageText}>{item.title.charAt(0)}</Text>
+        </View>
+      )}
 
       <View style={styles.content}>
         <View style={styles.typeBadge}>
@@ -94,6 +104,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 24,
     elevation: 10,
+  },
+  cardImage: {
+    width: '100%',
+    height: 280,
+    backgroundColor: colors.purple[50],
   },
   imagePlaceholder: {
     width: '100%',

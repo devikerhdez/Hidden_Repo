@@ -23,19 +23,40 @@ export default function RegisterScreen({ navigation }: Props) {
   const register = useAuthStore((s) => s.register);
 
   const handleRegister = async () => {
-    if (!email.trim() || !username.trim() || !password.trim()) return;
-    if (password.length < 6) {
-      Alert.alert('Error', 'La contraseña debe tener al menos 6 caracteres');
+    const trimmedEmail = email.trim();
+    const trimmedUsername = username.trim();
+
+    if (!trimmedEmail || !trimmedUsername || !password.trim()) {
+      Alert.alert('Campos incompletos', 'Por favor, rellena todos los campos.');
       return;
     }
+
+    if (trimmedUsername.length < 3) {
+      Alert.alert('Error', 'El nombre de usuario debe tener al menos 3 caracteres.');
+      return;
+    }
+
+    if (password.length < 6) {
+      Alert.alert('Error', 'La contraseña debe tener al menos 6 caracteres.');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmedEmail)) {
+      Alert.alert('Error', 'Por favor, introduce un correo electrónico válido.');
+      return;
+    }
+
     setLoading(true);
     try {
-      await register(email.trim(), username.trim(), password);
+      await register(trimmedEmail, trimmedUsername, password);
     } catch (err: any) {
-      Alert.alert(
-        'Error',
-        err.response?.data?.error || 'Error al registrarse'
-      );
+      const errorMsg =
+        err.response?.data?.error ||
+        (err.message === 'Network Error'
+          ? 'No se pudo conectar con el servidor. Revisa tu conexión o que el backend esté en ejecución.'
+          : 'Error al registrar la cuenta.');
+      Alert.alert('Error de registro', errorMsg);
     } finally {
       setLoading(false);
     }

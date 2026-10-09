@@ -2,8 +2,18 @@ import axios from 'axios';
 import { Platform } from 'react-native';
 import { useAuthStore } from '../store/authStore';
 
+import Constants from 'expo-constants';
+
 function getBaseUrl(): string {
   if (typeof __DEV__ !== 'undefined' && __DEV__) {
+    const hostUri =
+      Constants.expoConfig?.hostUri ||
+      (Constants as any).manifest2?.extra?.expoGo?.debuggerHost ||
+      (Constants as any).manifest?.debuggerHost;
+    if (hostUri) {
+      const ip = hostUri.split(':')[0];
+      if (ip) return `http://${ip}:3000`;
+    }
     if (Platform.OS === 'android') return 'http://10.0.2.2:3000';
     return 'http://localhost:3000';
   }
