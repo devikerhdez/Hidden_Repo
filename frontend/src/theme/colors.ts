@@ -20,11 +20,12 @@ export const colors = {
     secondary: '#6B6B80',
     muted: '#9B9BB0',
   },
-  success: '#4CAF50',
+  success: '#10B981',
   error: '#EF4444',
   warning: '#F59E0B',
   favorito: '#8838FF',
-  visto: '#4CAF50',
-  skip: '#EF4444',
-  guardado: '#F59E0B',
+  valorar: '#F59E0B',
+  visto: '#F59E0B', // Ahora dorado para valorar
+  skip: '#EF4444',   // Rojo para skip
+  guardado: '#10B981', // Ahora verde para guardar
 };

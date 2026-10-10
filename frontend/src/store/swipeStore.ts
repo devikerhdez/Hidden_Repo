@@ -35,16 +35,9 @@ export const useSwipeStore = create<SwipeState>((set, get) => ({
   },
 
   swipeAction: async (contentId, action) => {
-    const prevFeed = get().feed;
-    set((state) => ({
-      feed: state.feed.filter((item) => item.id !== contentId),
-    }));
-    try {
-      await api.post('/swipes', { content_id: contentId, action });
-    } catch {
-      set({ feed: prevFeed });
-      throw new Error('Failed to register swipe');
-    }
+    // Registramos el swipe en la base de datos sin mutar el array local del mazo
+    // para no desincronizar los índices del Swiper de React Native
+    await api.post('/swipes', { content_id: contentId, action });
   },
 
   setFilters: (newFilters) => {
